@@ -13,6 +13,30 @@ ARG YQ_BINARY="yq_${OS}_$ARCH"
 RUN wget "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -O /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
 
+FROM ubuntu:focal-20220426 as fuse-downloader
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+    git ca-certificates \
+    && update-ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+RUN git clone https://github.com/containers/fuse-overlayfs.git -b v1.8.2
+
+FROM ubuntu:focal-20220426 as fuse-builder
+WORKDIR /build
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+    libc6-dev gcc g++ make automake autoconf clang pkgconf libfuse3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=fuse-downloader /build /build
+RUN cd fuse-overlayfs && \
+    sh autogen.sh && \
+    LIBS="-ldl" LDFLAGS="-static" ./configure --prefix /usr && \
+    make
+
 FROM ubuntu:kinetic-20230605
 
 RUN apt-get update && \
@@ -54,6 +78,7 @@ RUN mkdir -p /etc/containers/
 COPY default-policy.json /etc/containers/policy.json
 
 COPY --from=yq-downloader --chown=1000:1000 /usr/local/bin/yq /usr/local/bin/yq
+COPY --from=fuse-builder --chown=1000:1000 /build/fuse-overlayfs/fuse-overlayfs /usr/bin/fuse-overlayfs
 COPY --from=buildah/buildah:959e6da7f52b27f8d7a6e39c884f700bce7ab5cb --chown=1000:1000 /usr/local/bin /usr/local/bin
 
 USER 1000
