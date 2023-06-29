@@ -50,6 +50,9 @@ RUN export IMG_DISABLE_EMBEDDED_RUNC=1 \
 
 ENV JENKINS_USER=jenkins
 
+RUN mkdir -p /etc/containers/
+COPY default-policy.json /etc/containers/policy.json
+
 COPY --from=yq-downloader --chown=1000:1000 /usr/local/bin/yq /usr/local/bin/yq
 COPY --from=buildah/buildah:959e6da7f52b27f8d7a6e39c884f700bce7ab5cb --chown=1000:1000 /usr/local/bin /usr/local/bin
 
