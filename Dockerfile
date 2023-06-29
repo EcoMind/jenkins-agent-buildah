@@ -22,7 +22,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
-RUN git clone https://github.com/containers/fuse-overlayfs.git -b v1.8.2
+RUN git clone https://github.com/containers/fuse-overlayfs.git -b v1.12
 
 FROM ubuntu:focal-20220426 as fuse-builder
 WORKDIR /build
