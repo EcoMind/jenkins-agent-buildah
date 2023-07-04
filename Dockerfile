@@ -20,6 +20,7 @@ ENV JENKINS_USER=1000
 
 RUN mkdir -p /etc/containers/
 COPY default-policy.json /etc/containers/policy.json
+RUN ["ln", "-sf", "/usr/bin/buildah", "/usr/bin/docker"]
 
 USER 1000
 
