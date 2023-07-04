@@ -14,7 +14,7 @@ RUN chmod +x ./dep-bootstrap.sh
 
 ENV USER=1000
 USER root
-RUN yum install -y git jq && chown 1000 -R /app
+RUN yum install -y git jq shellcheck xmlstarlet && chown 1000 -R /app
 
 ENV JENKINS_USER=1000
 
